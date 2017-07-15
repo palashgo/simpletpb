@@ -57,8 +57,9 @@ def get_magnets(bs_html, limit=1):
 
 if __name__ == '__main__':
     from sys import argv
-    magnets = get_magnets(search(' '.join(argv[1:])))
-    if magnets:
-        print(magnets[0])
-    else:
-        print('No magnets found')
+    if len(argv) > 1:
+        magnets = get_magnets(search(' '.join(argv[1:])))
+        if magnets:
+            print(magnets[0])
+        else:
+            print('No magnets found')
