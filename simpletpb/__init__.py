@@ -3,11 +3,11 @@
 from requests import get
 from urllib.parse import quote_plus
 from bs4 import BeautifulSoup as bs
-import categories as category
-import order_by
+from .categories import ALL
+from .order_by import DEFAULT
 
 
-def search(query, category=category.ALL, order_by=order_by.DEFAULT, page=0):
+def search(query, category=ALL, order_by=DEFAULT, page=0):
     """Query to The Pirate Bay
     
     Makes a Request.get() to thepiratebay.org and parses the response text
@@ -33,15 +33,5 @@ def get_magnets(bs_html):
     """
     hrefs = list(map(lambda link: link.get('href'), bs_html.find_all('a')))
     return list(filter(lambda href: href.startswith('magnet'), hrefs))
-
-
-if __name__ == '__main__':
-    from sys import argv
-    if len(argv) > 1:
-        magnets = get_magnets(search(' '.join(argv[1:])))
-        if magnets:
-            print(magnets[0])
-        else:
-            print('No magnets found')
 
 
