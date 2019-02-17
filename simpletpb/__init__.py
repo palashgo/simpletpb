@@ -5,16 +5,34 @@ from urllib.parse import quote_plus
 from bs4 import BeautifulSoup as bs
 from .categories import ALL
 from .order_by import DEFAULT
+
+import datetime
+import PTN
 import re
+from dateutil.parser import parse
 
 class Torrent:
     def __init__(self,title,seeds,peers,size,magnet,uploaded_time):
         self.title = title
-        self.seeds = seeds
-        self.peers = peers
+        self.seeds = int(seeds)
+        self.peers = int(peers)
         self.size  = size
         self.magnet = magnet
-        self.uploaded_time = uploaded_time
+        self.hash = re.match(".+?([\w]{40})",self.magnet).group(1)
+        
+        now = datetime.datetime.now()
+        if "ago" in uploaded_time:
+            minutes = uploaded_time.split(" ")[0]
+            self.uploaded_time = now - datetime.timedelta(minutes=int(minutes))
+        elif "Y-day" in uploaded_time:
+            yesterday = now - datetime.timedelta(1)
+            self.uploaded_time = parse(uploaded_time.replace("Y-day",yesterday.strftime("%Y-%m-%d")))
+        elif "Today" in uploaded_time:
+            self.uploaded_time = parse(uploaded_time.replace("Today",now.strftime("%Y-%m-%d")))
+        else:
+            self.uploaded_time = parse(uploaded_time)
+        
+        self.extracted_info = PTN.parse(self.title)
 
 class TPBSearch:
     def __init__(self,query, category=ALL, order_by=DEFAULT, page=0):
@@ -39,5 +57,4 @@ class TPBSearch:
             uploaded_time = re.search("Uploaded\s(.+?),", desc).group(1).replace('\xa0',' ')
             tr_torrent = Torrent(title,seeds,peers,size,magnet,uploaded_time)
             result.append(tr_torrent)
-
         return result
